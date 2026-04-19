@@ -1,0 +1,10 @@
+{
+  "name": "book-man-plugin",
+  "version": "1.0.0",
+  "description": "OpenCode plugin for dyslexia-friendly study companion",
+  "main": ".opencode/plugins/book-man.ts",
+  "dependencies": {
+    "@opencode-ai/plugin": "latest"
+  },
+  "type": "module"
+}

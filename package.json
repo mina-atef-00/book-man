@@ -1,0 +1,10 @@
+{
+  "name": "book-man",
+  "version": "1.0.0",
+  "description": "Dyslexia-Friendly LLM Wiki Study Companion for OpenCode",
+  "main": ".opencode/plugins/book-man.ts",
+  "dependencies": {
+    "@opencode-ai/plugin": "latest"
+  },
+  "type": "module"
+}
