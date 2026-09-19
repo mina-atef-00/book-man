@@ -2,6 +2,10 @@
 
 Dyslexia-Friendly Study Companion for OpenCode.
 
+| ![Tools live: plugin loads, all three tools execute](docs/img/tools-live.svg) |
+|---|
+| Tools live — plugin loads, `book-init` → `book-process` → `book-media` all execute. |
+
 ## What is this?
 
 book-man is an OpenCode plugin that helps people with dyslexia build and query personal knowledge wikis from academic books. It implements Karpathy's ["Obsidian RAG" Implementation](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f).
