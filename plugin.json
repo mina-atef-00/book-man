@@ -1,0 +1,24 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "book-man",
+  "version": "1.0.0",
+  "description": "Turn a scanned academic book into a readable, complete, dyslexia-friendly HTML edition: two-up OCR, printed-page mapping, coverage-preserving chapter pages with mixed visual formats, verification against the source, and assembly into one navigable file.",
+  "author": {
+    "name": "Mina Atef",
+    "url": "https://github.com/mina-atef-00"
+  },
+  "homepage": "https://github.com/mina-atef-00/book-man",
+  "repository": "https://github.com/mina-atef-00/book-man",
+  "license": "MIT",
+  "keywords": [
+    "dyslexia",
+    "accessibility",
+    "books",
+    "ocr",
+    "study",
+    "html",
+    "study-companion",
+    "knowledge-wiki",
+    "mcp"
+  ]
+}

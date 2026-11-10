@@ -1,122 +1,153 @@
 # book-man
 
-Dyslexia-Friendly Study Companion for OpenCode.
+**A dyslexia-friendly way to read a whole book.**
 
-| ![Tools live: plugin loads, all three tools execute](docs/img/tools-live.svg) |
-|---|
-| Tools live — plugin loads, `book-init` → `book-process` → `book-media` all execute. |
+book-man turns a scanned academic book into a complete, navigable HTML edition — not a
+summary. It runs in Hermes as a plugin: a skill that holds the writing method, and an MCP
+server that holds the deterministic pipeline.
 
-## What is this?
+The reader this was built for has dyslexia and cannot read the raw source. The page is their
+only access to the book, so the rule throughout is:
 
-book-man is an OpenCode plugin that helps people with dyslexia build and query personal knowledge wikis from academic books. It implements Karpathy's ["Obsidian RAG" Implementation](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f).
+> **Distil for readability, never by deletion.**
 
-## Features
+**Status.** The pipeline is exercised, not sketched: the MCP server answers `initialize`,
+`tools/list`, `book_pages` and `book_verify`; the OCR tool has run against a 249-page
+two-up scan; the verifier checks every figure on a page against the source text. The
+reference build is 17 chapters, ~187,000 words and 122 inline SVG figures in one file.
 
-- **Obsidian RAG Implementation**: PDF → sources/ → wiki/ → Query/Enhance
-- **MCPVault Integration**: Safe vault read/write/search via MCP
-- **MinerU Integration**: PDF/EPUB to Markdown conversion
-- **Dyslexia-Friendly Formatting**: Max 3-4 sentences per paragraph, clear headings
-- **Custom Tools**: `/init`, `/process`, `/media` commands
+Everything is kept — every claim, number, name, quotation, metaphor and judgement — and the
+*form* is what changes: claim-first containers, diagrams, timelines, glossaries, colour-coded
+voices, and a density switch.
 
-## Installation
+## Why not a summary
 
-### Automatic Installation (Recommended)
+A summary is a lossy operation performed once, by someone who already understands the
+argument. A reader who is lost does not need fewer words; they need the same words arranged
+so the structure is visible.
 
-Add to your `opencode.json`:
+This project was rebuilt after a summarised edition failed exactly that way: the reader came
+back saying *"I'm reading chapter 2 and I'm just lost. There's no context."* The fix was not
+more compression. It was completeness delivered in a readable shape.
 
-```json
-{
-  "plugin": ["book-man"]
-}
+## The pipeline
+
+```
+PDF ──► book_info ──► book_ocr ──► book_pages ──► [write the chapter page]
+                                                        │
+                                        book_verify ◄───┤
+                                        browser sweep ◄─┤
+                                        book_assemble ◄─┤
+                                        book_publish ◄──┘
 ```
 
-Then edit `~/.config/opencode/opencode.json` to add the MCP configuration below.
+| Stage | Tool | What it removes |
+|---|---|---|
+| 1 | `book_info` | surprises: page count, and whether the scan is two-up |
+| 2 | `book_ocr` | interleaved columns — splits spreads before OCR |
+| 3 | `book_pages` | PDF-page confusion — prints **printed** page numbers |
+| 4 | *the agent* | the writing. Judgement, not automation |
+| 5 | `book_verify` | figures that don't exist in the book |
+| 6 | *browser* | layout that overflows or clips |
+| 7 | `book_assemble` | seventeen files becoming one |
+| 8 | `book_publish` | dead relative links, missing fonts |
 
-### Manual Installation
+## What a chapter page contains
 
-Clone this repository, then copy to your plugin directory:
+- One-paragraph summary, then the chapter in the book's own section order
+- **Mixed containers**, chosen per job: two-panel contrasts, stat tiles, step rails, quote
+  cards, verdict bars, tables. Bullets only for genuine lists
+- **5-8 inline SVG figures**, each doing a different analytical job — never decoration
+- **Voices tinted** by speaker, because a chapter of quotations is otherwise a puzzle
+- A glossary of every technical term, in plain words, with page references
+- Self-check questions, and the author's own sources
+
+Every claim carries its printed page. No JavaScript anywhere — the file reads with scripts
+blocked.
+
+## Reading features
+
+| Feature | What it does |
+|---|---|
+| **Density switch** | hides running explanations and page numbers; keeps quotes, charts and tables |
+| **Wide layout** | 1060px column, or 1560px on a large screen |
+| **Collapsible sections** | the page never presents 8,000 words at the door |
+| **Sticky heading** | the current section title pins while you read it |
+| **Section colours** | you know where you are without reading a heading |
+
+## Install
 
 ```bash
-git clone https://github.com/mina-atef-00/book-man.git
-cp -r book-man ~/.config/opencode/plugins/
+git clone https://github.com/mina-atef-00/book-man
+ln -s "$PWD/book-man" ~/.hermes/plugins/book-man
 ```
 
-## Configuration
+Restart Hermes. The `book-man` tools appear in the tool list, and the `book-man` skill loads
+when a book task comes up.
 
-Add to your `opencode.json`:
+Requires `tesseract` and `poppler-utils` (`pdftoppm`, `pdfinfo`) for the OCR stage. Nothing
+else — the MCP server is standard library only.
 
-```json
-{
-  "mcp": {
-    "obsidian": {
-      "type": "local", 
-      "command": ["npx", "@bitbonsai/mcpvault@latest", "/path/to/your/vault/"],
-      "enabled": true
-    }
-  }
-}
-```
-
-Set MinerU token:
-
-```bash
-# Option 1: Copy .env.example and add your token
-cp .env.example .env
-# Then edit .env and add your token from https://mineru.net/user-center/api-token
-
-# Option 2: Set environment variable directly
-export MINERU_TOKEN="your-token-from-mineru.net"
-```
-
-## Skills
-
-The plugin auto-loads these skills:
-- `obsidian-markdown` - Proper Obsidian markdown formatting
-- `obsidian` - MCPVault behavior patterns
-- `mineru` - PDF extraction workflow
-
-## Usage
-
-### /init [path]
-
-Initialize a book from PDF/EPUB:
-
-```bash
-/init "/path/to/book.pdf"
-```
-
-### /process [target]
-
-Process content for study:
-- `/process chapter 3` - Generate summary, mindmap, quiz
-- `/process section 3.2` - Section-level materials
-
-### /media [target]
-
-Generate media prompts:
-- `/media chapter 3` - podcast, video, infographic, flashcards, slides
-
-### Query
-
-Simply ask questions naturally:
-- "What's this book about?"
-- "How should I study chapter 2?"
-
-## Architecture
+## Quickstart
 
 ```
-book-man/
-├── AGENT.md              # Agent definition
-├── .opencode/
-│   └── plugins/
-│       └── book-man.ts  # Plugin with custom tools
-├── package.json
-└── README.md
+book_info("/books/Hudson - Super Imperialism.pdf")
+# → 249 pages, 2410x1736 pts -> TWO-PAGE SPREADS (splitting)
+
+book_ocr("/books/Hudson - Super Imperialism.pdf", "sources/raw.md")
+book_pages("sources/raw.md", 41, 60)      # read chapter 1 at printed page numbers
+# … write pages/ch-01.html …
+book_verify("pages", source_file="sources/raw.md")
+book_assemble("/home/mina/wiki/super-imperialism")
+book_publish("pages", dest="/mnt/c/Users/mina/Desktop/Super Imperialism", fonts=True)
 ```
 
-## Dependencies
+## Repository layout
 
-- [MCPVault](https://github.com/bitbonsai/mcpvault) - Obsidian MCP
-- [MinerU](https://github.com/opendatalab/mineru) - PDF converter
-- [obsidian-markdown skill](https://skills.sh/kepano/obsidian-skills/obsidian-markdown)
-- [mineru skill](https://skills.sh/nebutra/mineru-skill/mineru)
+```
+plugin.json                     plugin manifest
+mcp.json                        MCP server declaration
+server/book_man_mcp.py          stdio JSON-RPC server, stdlib only
+scripts/
+  ocr_scanned_pdf.py            spread detection, splitting, parallel OCR
+  verify_pages.py               citations, figures vs source, layout warnings
+  assemble_book.py              many chapters -> one file
+  publish.py                    deploy and check relative links
+  check_html_page.py            single-page tag balance
+  range.py                      printed-page helper
+skills/book-man/
+  SKILL.md                      the writing method
+  references/page-contract.md   component vocabulary
+  references/pitfalls.md        the ten failures that cost the most time
+  templates/page-shell.html     the approved page shell
+```
+
+## Design rules that are not negotiable
+
+1. **Cite printed pages.** A citation to PDF page 37 is useless to someone holding the book.
+2. **Split two-up spreads before OCR.** Whole-spread OCR produces plausible, wrong prose —
+   the worst failure mode, because it reads fine.
+3. **Verify against the book, never against a summary** — the summary is the artifact that
+   lost the detail.
+4. **The browser is the only authority on layout.** Static checkers have cried wolf three
+   times on this project.
+5. **No JavaScript.** A reading aid that needs a script is not a reading aid.
+
+## Honest limitations
+
+- OCR quality bounds the result. Rotated tables and shredded columns are reported, never
+  invented around — every chapter page lists the passages it could not read.
+- The writing step is judgement and is not automated. A pipeline can guarantee completeness
+  of *input*; only reading the source can guarantee completeness of *output*.
+- Long chapters run 10,000-18,000 words. That is deliberate: the alternative was dropping
+  the author's quotations.
+
+## Legacy: the OpenCode plugin
+
+The first version of this project was an OpenCode plugin (`AGENT.md`, `.opencode/`,
+`package.json`). Those files are still in the repository and still work for OpenCode users,
+but Hermes is now the supported target and the pipeline above is where development happens.
+
+## Licence
+
+MIT.

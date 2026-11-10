@@ -1,0 +1,14 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "book-man": {
+      "type": "stdio",
+      "command": "python3",
+      "args": [
+        "${PLUGIN_ROOT}/server/book_man_mcp.py"
+      ],
+      "env": {},
+      "cwd": "${PLUGIN_DATA}"
+    }
+  }
+}
